@@ -1,0 +1,1 @@
+const scryptMcf = require('scrypt-mcf')

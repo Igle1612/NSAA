@@ -1,0 +1,22 @@
+{
+  "users": [
+    {
+      "username": "user1",
+      "password": "$scrypt$ln=17,r=8,p=1$W8pJw0YxHz73HWpO/tVg/g$zkovVNx1GHbTaDNL688IIyIU5+vp3SOhzRirm6qJRyI"
+    },
+    {
+      "username": "user2",
+      "password": "$scrypt$ln=17,r=8,p=1$O+zs9EENlnw43cj7ohiRdw$TfVL0Buwdsfyw88KWLSCTDQhCo+XSx/qPejzORM/7Jw"
+    },
+    {
+      "username": "hola",
+      "password": "$scrypt$ln=17,r=8,p=1$72mP/yMX5215vH2XZ+scag$JTaTyg48rtuLapRbj8lTEOYQTuzwUbRVF/q4Aq+b/Lw",
+      "salt": "368066f1d761c0bc31a2930b751c6ed0"
+    },
+    {
+      "username": "marc",
+      "password": "$scrypt$ln=17,r=8,p=1$7Ny8sKpI/ASJxGuGkroG0w$6w55WXE3tIaC7pqdPlwLO73Fb9rc03Ql7g3ZefPwrdU",
+      "salt": "9235d28c07b69e496593810f1f68238c"
+    }
+  ]
+}
