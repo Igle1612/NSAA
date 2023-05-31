@@ -15,7 +15,7 @@ async function main() {
   const GoogleStrategy = require('passport-google-oidc').Strategy;
   const Issuer = require('openid-client').Issuer;
   require('dotenv').config()
-  const { generateToken } = require("./utils/tokenmanagement");
+  const { generateToken, verifyToken, redirectHome } = require("./utils/tokenmanagement");
 
   const app = express()
   const port = 3000
@@ -120,12 +120,20 @@ async function main() {
   passport.use( "oidc" , new GoogleStrategy({
     clientID: process.env.OIDC_CLIENT_ID,
     clientSecret: process.env.OIDC_CLIENT_SECRET,
-    callbackURL: 'http://localhost:3000/oidc/cb', 
+    callbackURL: 'http://localhost:3000/oidc/cb'
   },
-  function verify(issuer, profile, cb) {
+  function verify(identifier, profile, cb) {
+    console.log(profile)
+    let familyName = 'not set on google account';
+
+    if (profile.name && profile.name.familyName) {
+      familyName = profile.name.familyName;
+    }
     const user = {
-        id: profile.id,
-        name: profile.displayName //profile.displayName
+      id: profile.id,
+      username: profile.displayName,
+      mail: profile.emails[0].value,
+      family: familyName,
     }
     return cb(null, user);
   }
@@ -148,8 +156,8 @@ async function main() {
   app.use(logger('dev'))
   app.use(cookieParser())
 
-  var mainRouter = require('./routes/main.js')
-  app.use("/", mainRouter);
+  //var mainRouter = require('./routes/main.js')
+  //app.use("/", mainRouter);
 
   var loginRouter = require('./routes/login.js')
   app.use("/login", loginRouter);
@@ -163,49 +171,23 @@ async function main() {
   var loginOauthPass = require('./routes/oauthpass.js')
   app.use("/auth", loginOauthPass)
 
+
+  //I want to use email, given_name and family_name in the login route
   app.get('/oidc/login', passport.authenticate('oidc', {scope: 'openid email profile'}))
 
-  app.get('/oidc/cb', passport.authenticate('oidc', { failureRedirect: '/login', failureMessage: true }), (req, res) => {
+  //I want to use also email, given_name and family_name in the callback route
+  app.get('/oidc/cb', passport.authenticate('oidc', { failureRedirect: '/login', failureMessage: true }),
+    generateToken, redirectHome, (req, res) => {})
 
-    // 1. Download the issuer configuration from the well-known openid configuration (OIDC discovery)
-    /*const oidcIssuer = await Issuer.discover(process.env.OIDC_PROVIDER)
+  app.get('/', verifyToken, (req, res) => {
+    // If token verified (verifyToken) send a random adage
+    const adage = fortune.fortune();
+    toSend = "SUB: " + req.user.sub + "\n\nEMAIL: " + req.user.email + "\n\nFAMILY: " + req.user.family_name +
+        "\n\nADAGE: " + adage;
 
-    // 2. Setup an OIDC client/relying party.
-    const oidcClient = new oidcIssuer.Client({
-        client_id: process.env.OIDC_CLIENT_ID,
-        client_secret: process.env.OIDC_CLIENT_SECRET,
-        redirect_uris: [process.env.OIDC_CALLBACK_URL],
-        response_types: ['code'] // code is use for Authorization Code Grant; token for Implicit Grant
-    })
-
-    passport.use('oidc', new OpenIDConnectStrategy({
-        issuer: oidcIssuer,
-        client: oidcClient,
-        usePKCE: false // We are using standard Authorization Code Grant. We do not need PKCE.
-    }, (tokenSet, userInfo, done) => {
-        console.log(tokenSet, userInfo)
-        if (tokenSet === undefined || userInfo === undefined) {
-            return done('no tokenSet or userInfo')
-        }
-        return done(null, userInfo)
-    }))*/
-
-    /**
-   * Create our JWT using the req.user.email as subject, and set the cookie.
-   */
-    const token = generateToken("Hola") // just copy and paste or invoke the function you used for creating the JWT for a user logging in with username and password.
-  
-    res.cookie('jwt', token, { httpOnly: true, secure: true})
-  
-    // And let us log a link to the jwt.io debugger, for easy checking/verifying:
-    console.log(`Token sent. Debug at https://jwt.io/?value=${token}`)
-    console.log(`Token secret (for verifying the signature): ${global.jwtSecret.toString('base64')}`)
-
-    res.redirect('http://localhost:3000/') // just copy and paste or invoke the function you used for creating the JWT for a user logging in with username and password. The only difference is that now the sub claim will be set to req.user.email
+    res.send(toSend);
   })
 
-  //var loginOIDC = require('./routes/oidc.js')
-  //app.use("/oidc", loginOIDC)
 
   var registerRouter = require('./routes/register.js')
   app.use("/register", registerRouter)

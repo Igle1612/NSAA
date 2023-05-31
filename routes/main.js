@@ -49,6 +49,7 @@ const isAuthenticated = (req, res, next) => {
 // fortune teller route
 router.get('/', isAuthenticated, (req, res) => {
   const adage = fortune.fortune()
+  console.log(`Hello ${req.user.email}`)
   res.send(`Hello ${req.user.username}, here's your adage: ${adage}`)
 })
 

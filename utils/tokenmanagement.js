@@ -23,6 +23,31 @@ const generateToken = (username) => {
       return token
 };
 
+const verifyToken = (req, res, next) => {
+    const token = req.cookies.user_login;
+    try {
+        const decoded = jwt.verify(token, jwtSecret);
+        req.user = decoded;
+        next();
+    } catch (err) {
+        res.clearCookie('user_login');
+        if ((req.path === '/login') || (req.path === '/register')) {
+            next();
+        } else {
+            res.redirect('/login');
+        }
+    }
+};
+
+const redirectHome = (req, res, next) => {
+    if (req.user !== undefined) {
+        res.redirect('/');
+    }
+    next()
+};
+
 module.exports = {
-    generateToken
+    generateToken,
+    verifyToken,
+    redirectHome
 };
