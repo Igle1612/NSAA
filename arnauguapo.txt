@@ -1,0 +1,12 @@
+aircrack-ng -w combinations.txt wpa-01.cap
+
+Ho he fet en python jo, sense el jhon:
+
+output_file = "combinations.txt"  # Specify the output file name
+
+with open(output_file, "w") as file:
+    for day in range(33):
+        for month in range(13):
+            for year in range(1940, 2024):
+                combination = f"HERNANDEZ_{day:02d}{month:02d}{year:04d}\n"
+                file.write(combination)
